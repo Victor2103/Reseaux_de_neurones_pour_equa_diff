@@ -139,6 +139,130 @@ def Initialisation(nx):
 
 
 
+nx= 50
+dx = 2/(nx-1)
+dt2=0.001
+
+xcoord,f = Initialisation(nx)
+
+
+
+apprentissage_steps=2000
+display_step = apprentissage_steps/20
+for i in range(apprentissage_steps):
+    apprentissage()
+    if i % display_step == 0:
+        print(loss_apprentissage())
+
+
+
+from matplotlib.pyplot import figure
+
+figure(figsize=(10,10))
+
+
+
+result=[]
+T=0
+for i in xcoord:
+  #result.append(f(i))
+  result.append(g(i,T).numpy()[0][0])
+
+plt.plot(xcoord,f,label="analytical solution at t=0")
+plt.plot(xcoord, result, label="Neural Net Approximation at t=0")
+plt.legend(loc=1, prop={'size': 10})
+plt.show()
+plt.close()
+
+
+
+def Apply_method(f,nx):
+    u1=f.copy()
+    for i in range(1,nx):
+        u1[i]=f[i] - dt2/dx*(f[i]-f[i-1])
+    return(u1)
+  
+tabfinal=np.ones((6,nx))
+i=1
+tabfinal[0]=f
+deb=0
+obj=0.1
+while (i<6):
+    tabfinal[i]=tabfinal[i-1]
+    while (deb<obj):
+        tabfinal[i]=Apply_method(tabfinal[i],nx)
+        deb=dt2+deb
+    i=i+1
+    obj=obj+0.1
+
+
+
+training_steps = 1000
+display_step = training_steps/5
+#print("for T= "+str(T))
+for i in range(training_steps):
+    train_step(tabfinal)
+    if i % display_step == 0:
+        print("loss: %f " % (training_loss(tabfinal)))
+
+
+
+X = xcoord
+def true_solution(x,t):
+    return u(x-t)
+
+result=[]
+T=0
+T2=0.5
+for i in xcoord:
+  result.append(g(i,T2).numpy()[0][0])
+
+
+S=[]
+for i in X:
+    S.append(true_solution(i,T))
+
+S2=[]
+for i in X:
+    S2.append(true_solution(i,T2))
+tableautemps=[0,0.1,0.2,0.3,0.4,0.5]
+figure(figsize=(10,10))
+for i in range(len(tableautemps)):
+    result=[]
+    for j in xcoord:
+        result.append(g(j,tableautemps[i]).numpy()[0][0])
+    plt.plot(X, result, label="Neural Net Approximation t="+str(tableautemps[i]))
+    plt.plot(xcoord,tabfinal[i],label="Lorena's Barba Solution t="+str(tableautemps[i]))
+    
+plt.legend(loc=1, prop={'size': 10})    
+plt.show()
+plt.close()
+
+
+f=Apply_method(tabfinal[5],nx)
+T=0.501
+while (T<0.55):
+    f=Apply_method(f,nx)
+    T=T+0.001
+
+
+result=[]
+T=0.5
+T2=0.55
+
+for i in xcoord:
+  result.append(g(i,T2).numpy()[0][0])
+
+figure(figsize=(10,10))
+#plt.plot(X,S,label="true solution t="+str(T))
+plt.plot(xcoord, result, label="Neural Net Approximation t="+str(T2))
+plt.plot(xcoord,tabfinal[5],label="Lorena's Barba Solution t="+str(T))
+plt.plot(xcoord,f,label="Lorena's Barba Solution t="+str(T2))
+plt.legend(loc=2, prop={'size': 10})
+plt.show()
+plt.close()
+
+
 
 
 
